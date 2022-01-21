@@ -21,6 +21,7 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.splitlayout.SplitLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
+import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.data.renderer.TemplateRenderer;
 import com.vaadin.flow.router.BeforeEnterEvent;
@@ -55,7 +56,7 @@ public class MasterDetailView extends Div implements BeforeEnterObserver {
     private Button cancel = new Button("Cancel");
     private Button save = new Button("Save");
 
-    private BeanValidationBinder<SamplePerson> binder;
+    private Binder<SamplePerson> binder;
 
     private SamplePerson samplePerson;
 
@@ -103,7 +104,7 @@ public class MasterDetailView extends Div implements BeforeEnterObserver {
         });
 
         // Configure Form
-        binder = new BeanValidationBinder<>(SamplePerson.class);
+        binder = new Binder<>(SamplePerson.class);
 
         // Bind fields. This where you'd define e.g. validation rules
 
