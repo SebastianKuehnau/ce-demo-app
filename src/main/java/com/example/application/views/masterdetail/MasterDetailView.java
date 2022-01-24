@@ -3,6 +3,9 @@ package com.example.application.views.masterdetail;
 import com.example.application.data.entity.SamplePerson;
 import com.example.application.data.service.SamplePersonService;
 import com.example.application.views.MainLayout;
+import com.vaadin.collaborationengine.CollaborationAvatarGroup;
+import com.vaadin.collaborationengine.CollaborationBinder;
+import com.vaadin.collaborationengine.UserInfo;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasStyle;
 import com.vaadin.flow.component.UI;
@@ -20,19 +23,14 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.splitlayout.SplitLayout;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.data.binder.BeanValidationBinder;
-import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.data.renderer.TemplateRenderer;
-import com.vaadin.flow.router.BeforeEnterEvent;
-import com.vaadin.flow.router.BeforeEnterObserver;
-import com.vaadin.flow.router.PageTitle;
-import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.RouteAlias;
+import com.vaadin.flow.router.*;
 import com.vaadin.flow.spring.data.VaadinSpringDataHelpers;
-import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
+
+import java.util.Optional;
 
 @PageTitle("Master-Detail")
 @Route(value = "master-detail/:samplePersonID?/:action?(edit)", layout = MainLayout.class)
@@ -40,8 +38,10 @@ import org.springframework.data.domain.PageRequest;
 @Uses(Icon.class)
 public class MasterDetailView extends Div implements BeforeEnterObserver {
 
+    public static final String TOPIC_ID = "personform";
     private final String SAMPLEPERSON_ID = "samplePersonID";
     private final String SAMPLEPERSON_EDIT_ROUTE_TEMPLATE = "master-detail/%d/edit";
+    private final UserInfo localUser;
 
     private Grid<SamplePerson> grid = new Grid<>(SamplePerson.class, false);
 
@@ -56,14 +56,21 @@ public class MasterDetailView extends Div implements BeforeEnterObserver {
     private Button cancel = new Button("Cancel");
     private Button save = new Button("Save");
 
-    private Binder<SamplePerson> binder;
+    private CollaborationBinder<SamplePerson> binder;
 
     private SamplePerson samplePerson;
 
     private SamplePersonService samplePersonService;
+    private CollaborationAvatarGroup avatarGroup;
 
     public MasterDetailView(@Autowired SamplePersonService samplePersonService) {
         this.samplePersonService = samplePersonService;
+
+        // NOTE: In a real application, use the user id of the logged in user
+        // instead
+        String userId = System.identityHashCode(UI.getCurrent()) + "";
+        localUser = new UserInfo(userId, "User " + userId);
+
         addClassNames("master-detail-view", "flex", "flex-col", "h-full");
 
         // Create UI
@@ -104,7 +111,7 @@ public class MasterDetailView extends Div implements BeforeEnterObserver {
         });
 
         // Configure Form
-        binder = new Binder<>(SamplePerson.class);
+        binder = new CollaborationBinder<>(SamplePerson.class, localUser);
 
         // Bind fields. This where you'd define e.g. validation rules
 
@@ -162,6 +169,11 @@ public class MasterDetailView extends Div implements BeforeEnterObserver {
         editorDiv.setClassName("p-l flex-grow");
         editorLayoutDiv.add(editorDiv);
 
+        avatarGroup = new CollaborationAvatarGroup(
+                localUser, TOPIC_ID);
+        editorDiv.addComponentAsFirst(avatarGroup);
+        avatarGroup.setVisible(false);
+
         FormLayout formLayout = new FormLayout();
         firstName = new TextField("First Name");
         lastName = new TextField("Last Name");
@@ -212,7 +224,11 @@ public class MasterDetailView extends Div implements BeforeEnterObserver {
 
     private void populateForm(SamplePerson value) {
         this.samplePerson = value;
-        binder.readBean(this.samplePerson);
 
+        avatarGroup.setVisible(value != null);
+
+        String topicId = this.samplePerson != null ? String.format(TOPIC_ID + "/%d", this.samplePerson.getId()) : null ;
+        avatarGroup.setTopic(topicId);
+        binder.setTopic(topicId, () -> this.samplePerson);
     }
 }
