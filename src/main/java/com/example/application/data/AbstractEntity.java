@@ -1,6 +1,6 @@
 package com.example.application.data;
 
-import dev.hilla.Nonnull;
+import com.vaadin.fusion.Nonnull;
 
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
