@@ -14,7 +14,7 @@ CollaborationMessageInput messageInput = new CollaborationMessageInput(messageLi
 ```java
 messageList.setTopic(topicId);
 ```
-3. do some styling for beauti reasons
+3. add components to layout and do some styling for beauty reasons
 ```java
 chatDialog = new Dialog();
 VerticalLayout rootLayout = new VerticalLayout();
