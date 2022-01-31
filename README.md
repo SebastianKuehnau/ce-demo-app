@@ -5,35 +5,36 @@ data binding.
 
 To integrate the collaboration engine you need to do the following steps:
 
-1. add @Push annotation to Application class
+1. add necessary for listing messages and message input to view class 
   ```java
-@Push
-public class Application ...
+CollaborationMessageList messageList = new CollaborationMessageList(localUser, null);
+CollaborationMessageInput messageInput = new CollaborationMessageInput(messageList);
   ```
-2. change Binder to CollaborationBinder
+2. set Topic ID for appropriate bean when available
 ```java
-private CollaborationBinder<SamplePerson> binder;
+messageList.setTopic(topicId);
 ```
-3. create a user-id for collaboration engine
+3. do some styling for beauti reasons
 ```java
-String userId = System.identityHashCode(UI.getCurrent()) + "";
-UserInfo localUser = new UserInfo(userId, "User " + userId);
-```
-4. add user info instance to CE-Binder
-```java
-binder = new CollaborationBinder<>(SamplePerson.class, localUser);
-```
-5. create avatar component to show user details to other collaborators
-```java
-AvatarGroup avatarGroup = new CollaborationAvatarGroup(localUser, "personform");
-editorDiv.addComponentAsFirst(avatarGroup);
-avatarGroup.setVisible(false);
-```
-6. set bean and bean specific topic id to CE binder
-```java
-String topicId = "personform/" + person.getId() ;
-avatarGroup.setTopic(topicId);
-binder.setTopic(topicId, () -> this.samplePerson);
+chatDialog = new Dialog();
+VerticalLayout rootLayout = new VerticalLayout();
+rootLayout.setSizeFull();
+rootLayout.setPadding(false);
+rootLayout.setMargin(false);
+rootLayout.setSpacing(false);
+
+messageList = new CollaborationMessageList(localUser, null);
+messageList.setSizeFull();
+
+CollaborationMessageInput messageInput = new CollaborationMessageInput(messageList);
+messageInput.setWidthFull();
+rootLayout.add(messageList, messageInput);
+rootLayout.expand(messageList);
+
+chatDialog.setWidth(400, Unit.PIXELS);
+chatDialog.setHeight(600, Unit.PIXELS);
+chatDialog.add(rootLayout);
+chatDialog.setModal(true);
 ```
 
-See results and full implementation in [collaborative branch](https://github.com/SebastianKuehnau/ce-demo-app/tree/collaborative).
+See results and full implementation in [chat branch](https://github.com/SebastianKuehnau/ce-demo-app/tree/chat).
