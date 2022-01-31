@@ -3,24 +3,26 @@ package com.example.application.views.masterdetail;
 import com.example.application.data.entity.SamplePerson;
 import com.example.application.data.service.SamplePersonService;
 import com.example.application.views.MainLayout;
-import com.vaadin.collaborationengine.CollaborationAvatarGroup;
-import com.vaadin.collaborationengine.CollaborationBinder;
-import com.vaadin.collaborationengine.UserInfo;
+import com.vaadin.collaborationengine.*;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasStyle;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.dependency.Uses;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.splitlayout.SplitLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.ValidationException;
@@ -52,6 +54,7 @@ public class MasterDetailView extends Div implements BeforeEnterObserver {
     private DatePicker dateOfBirth;
     private TextField occupation;
     private Checkbox important;
+    private Button chatButton;
 
     private Button cancel = new Button("Cancel");
     private Button save = new Button("Save");
@@ -62,6 +65,9 @@ public class MasterDetailView extends Div implements BeforeEnterObserver {
 
     private SamplePersonService samplePersonService;
     private CollaborationAvatarGroup avatarGroup;
+    private CollaborationMessageList messageList;
+    private Dialog chatDialog;
+    private HorizontalLayout chatLayout;
 
     public MasterDetailView(@Autowired SamplePersonService samplePersonService) {
         this.samplePersonService = samplePersonService;
@@ -139,6 +145,7 @@ public class MasterDetailView extends Div implements BeforeEnterObserver {
             }
         });
 
+        createDialog();
     }
 
     @Override
@@ -171,8 +178,15 @@ public class MasterDetailView extends Div implements BeforeEnterObserver {
 
         avatarGroup = new CollaborationAvatarGroup(
                 localUser, TOPIC_ID);
-        editorDiv.addComponentAsFirst(avatarGroup);
-        avatarGroup.setVisible(false);
+
+        chatButton = new Button(VaadinIcon.CHAT.create(), buttonClickEvent -> openDialog());
+        chatButton.addThemeVariants(ButtonVariant.LUMO_LARGE, ButtonVariant.LUMO_TERTIARY);
+        chatButton.setWidth(50, Unit.PIXELS);
+
+        chatLayout = new HorizontalLayout(avatarGroup, chatButton);
+        chatLayout.expand(avatarGroup);
+        editorDiv.addComponentAsFirst(chatLayout);
+        chatLayout.setVisible(false);
 
         FormLayout formLayout = new FormLayout();
         firstName = new TextField("First Name");
@@ -190,9 +204,36 @@ public class MasterDetailView extends Div implements BeforeEnterObserver {
         }
         formLayout.add(fields);
         editorDiv.add(formLayout);
+
         createButtonLayout(editorLayoutDiv);
 
         splitLayout.addToSecondary(editorLayoutDiv);
+    }
+
+    private void openDialog() {
+        chatDialog.open();
+    }
+
+    private void createDialog() {
+        chatDialog = new Dialog();
+        VerticalLayout rootLayout = new VerticalLayout();
+        rootLayout.setSizeFull();
+        rootLayout.setPadding(false);
+        rootLayout.setMargin(false);
+        rootLayout.setSpacing(false);
+
+        messageList = new CollaborationMessageList(localUser, null);
+        messageList.setSizeFull();
+
+        CollaborationMessageInput messageInput = new CollaborationMessageInput(messageList);
+        messageInput.setWidthFull();
+        rootLayout.add(messageList, messageInput);
+        rootLayout.expand(messageList);
+
+        chatDialog.setWidth(400, Unit.PIXELS);
+        chatDialog.setHeight(600, Unit.PIXELS);
+        chatDialog.add(rootLayout);
+        chatDialog.setModal(true);
     }
 
     private void createButtonLayout(Div editorLayoutDiv) {
@@ -225,10 +266,11 @@ public class MasterDetailView extends Div implements BeforeEnterObserver {
     private void populateForm(SamplePerson value) {
         this.samplePerson = value;
 
-        avatarGroup.setVisible(value != null);
+        chatLayout.setVisible(value != null);
 
         String topicId = this.samplePerson != null ? String.format(TOPIC_ID + "/%d", this.samplePerson.getId()) : null ;
         avatarGroup.setTopic(topicId);
+        messageList.setTopic(topicId);
         binder.setTopic(topicId, () -> this.samplePerson);
     }
 }
