@@ -1,40 +1,29 @@
 # CE Demo App
 
-This project can be used to show how simple you can integrate the Collaboration Engine into an existing application with
-data binding.
+This branch shows the simple integration of the PresenceManager part of the Collaboration Engine. With the Presence Menanger you can respond when a user joins and leaves to a specific topic context. 
 
-To integrate the collaboration engine you need to do the following steps:
+To integrate the presence manager you need to do the following steps:
 
-1. add necessary for listing messages and message input to view class 
+1. create instance of presence manager when bean is populated to a form
   ```java
-CollaborationMessageList messageList = new CollaborationMessageList(localUser, null);
-CollaborationMessageInput messageInput = new CollaborationMessageInput(messageList);
+PresenceManager presenceManager = new PresenceManager(component, localUser, topicId);
   ```
-2. set Topic ID for appropriate bean when available
+2. make user presence visible in presence manager
 ```java
-messageList.setTopic(topicId);
+presenceManager.markAsPresent(true);
 ```
-3. add components to layout and do some styling for beauty reasons
+3. implement listener invoke when user state is changing
 ```java
-chatDialog = new Dialog();
-VerticalLayout rootLayout = new VerticalLayout();
-rootLayout.setSizeFull();
-rootLayout.setPadding(false);
-rootLayout.setMargin(false);
-rootLayout.setSpacing(false);
+presenceManager.setPresenceHandler(presenceContext -> {
+        userList.add(presenceContext.getUser());
 
-messageList = new CollaborationMessageList(localUser, null);
-messageList.setSizeFull();
+        //do something when user joins
 
-CollaborationMessageInput messageInput = new CollaborationMessageInput(messageList);
-messageInput.setWidthFull();
-rootLayout.add(messageList, messageInput);
-rootLayout.expand(messageList);
-
-chatDialog.setWidth(400, Unit.PIXELS);
-chatDialog.setHeight(600, Unit.PIXELS);
-chatDialog.add(rootLayout);
-chatDialog.setModal(true);
+        return () -> {
+            userList.remove(presenceContext.getUser());
+            //do something when user leaves
+        };
+});
 ```
 
-See results and full implementation in [chat branch](https://github.com/SebastianKuehnau/ce-demo-app/tree/chat).
+See results and full implementation in [presence manger branch](https://github.com/SebastianKuehnau/ce-demo-app/tree/presence-manager).
