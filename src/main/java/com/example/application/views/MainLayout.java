@@ -1,6 +1,7 @@
 package com.example.application.views;
 
-import com.example.application.views.masterdetail.MasterDetailView;
+import com.example.application.views.advanced.AdvancedView;
+import com.example.application.views.collaborative.CollaborativeView;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
@@ -56,6 +57,7 @@ public class MainLayout extends AppLayout {
         setPrimarySection(Section.DRAWER);
         addToNavbar(true, createHeaderContent());
         addToDrawer(createDrawerContent());
+        setDrawerOpened(false);
     }
 
     private Component createHeaderContent() {
@@ -102,8 +104,8 @@ public class MainLayout extends AppLayout {
 
     private List<RouterLink> createLinks() {
         MenuItemInfo[] menuItems = new MenuItemInfo[]{ //
-                new MenuItemInfo("Master-Detail", "la la-columns", MasterDetailView.class), //
-
+                new MenuItemInfo("Collaborative", "la la-columns", CollaborativeView.class), //
+                new MenuItemInfo("Advanced", "la la-columns", AdvancedView.class), //
         };
         List<RouterLink> links = new ArrayList<>();
         for (MenuItemInfo menuItemInfo : menuItems) {
