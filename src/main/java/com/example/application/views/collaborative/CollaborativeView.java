@@ -120,7 +120,6 @@ public class CollaborativeView extends Div implements BeforeEnterObserver {
         binder = new CollaborationBinder<>(SamplePerson.class, localUser);
 
         // Bind fields. This where you'd define e.g. validation rules
-
         binder.bindInstanceFields(this);
 
         cancel.addClickListener(e -> {
